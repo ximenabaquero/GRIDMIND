@@ -27,10 +27,10 @@ export function GridRow({
 
   return (
     <div className="flex items-center gap-2 sm:gap-3 group">
-      {/* Drag handle */}
+      {/* Drag handle — hidden on mobile */}
       <div
         onPointerDown={onDragHandlePointerDown}
-        className="opacity-0 group-hover:opacity-40 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0 flex items-center touch-none"
+        className="hidden sm:flex opacity-0 group-hover:opacity-40 hover:!opacity-100 cursor-grab active:cursor-grabbing shrink-0 items-center touch-none"
         title="Drag to reorder"
       >
         <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor" className="text-text-muted">
@@ -43,10 +43,22 @@ export function GridRow({
         </svg>
       </div>
 
-      {/* Track label */}
+      {/* Track label — compact on mobile, full on desktop */}
       <button
         onClick={onTrackClick}
-        className="flex items-center gap-1.5 min-w-[90px] sm:min-w-[110px] text-left shrink-0 rounded-md px-1.5 py-1 hover:bg-white/5 transition-colors"
+        className="flex flex-col items-center gap-0.5 min-w-[44px] sm:hidden shrink-0 rounded-md px-1 py-1 hover:bg-white/5 transition-colors"
+      >
+        <span className="text-xl leading-none">{track.icon}</span>
+        <p className="text-[9px] text-text-muted tabular-nums leading-tight">
+          {doneCount}/{track.weeklyTarget}
+        </p>
+        {streak >= 1 && (
+          <p className="text-[9px] text-orange-400 leading-tight">🔥{streak}</p>
+        )}
+      </button>
+      <button
+        onClick={onTrackClick}
+        className="hidden sm:flex items-center gap-1.5 min-w-[110px] text-left shrink-0 rounded-md px-1.5 py-1 hover:bg-white/5 transition-colors"
       >
         <span className="text-base leading-none">{track.icon}</span>
         <div className="overflow-hidden">

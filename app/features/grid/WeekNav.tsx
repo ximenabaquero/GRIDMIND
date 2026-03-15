@@ -60,8 +60,8 @@ export function WeekNav({ weekId, onPrev, onNext }: WeekNavProps) {
 
       {/* Day labels + dates */}
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="w-[10px] shrink-0" /> {/* spacer matching drag handle */}
-        <div className="min-w-[90px] sm:min-w-[110px] shrink-0" /> {/* spacer matching track label */}
+        <div className="hidden sm:block w-[10px] shrink-0" /> {/* spacer matching drag handle */}
+        <div className="min-w-[44px] sm:min-w-[110px] shrink-0" /> {/* spacer matching track label */}
         <div className="flex-1 grid grid-cols-7 gap-1 sm:gap-1.5">
           {dates.map((date, i) => {
             const isToday =
