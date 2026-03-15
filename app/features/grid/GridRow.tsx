@@ -53,14 +53,12 @@ export function GridRow({
           <p className="text-xs font-medium text-text-primary truncate leading-tight">
             {track.name}
           </p>
-          <p className="text-[10px] text-text-muted leading-tight">
+          <p className="text-[10px] text-text-muted leading-tight flex items-center gap-1">
             {doneCount}/{track.weeklyTarget}
+            {streak >= 1 && (
+              <span className="font-semibold text-orange-400">🔥{streak}</span>
+            )}
           </p>
-          {streak >= 1 && (
-            <p className="text-[10px] font-semibold text-orange-400 leading-tight">
-              🔥{streak}
-            </p>
-          )}
         </div>
       </button>
 

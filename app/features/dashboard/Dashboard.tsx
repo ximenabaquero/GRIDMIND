@@ -56,13 +56,18 @@ export function Dashboard() {
       {tiles.map((tile) => (
         <div
           key={tile.label}
-          className="flex flex-col gap-1 bg-bg-surface border border-border rounded-xl p-3"
+          className="relative flex flex-col gap-1.5 bg-bg-surface border border-border rounded-xl p-3 overflow-hidden"
         >
-          <p className="text-[10px] uppercase tracking-widest text-text-muted font-medium">
+          {/* Colored top accent */}
+          <div
+            className="absolute inset-x-0 top-0 h-[2px] rounded-t-xl"
+            style={{ backgroundColor: tile.color }}
+          />
+          <p className="text-[10px] uppercase tracking-widest font-semibold mt-0.5" style={{ color: `${tile.color}99` }}>
             {tile.label}
           </p>
           <p
-            className="text-2xl font-bold leading-none tabular-nums"
+            className="text-[26px] font-bold leading-none tabular-nums"
             style={{ color: tile.color }}
           >
             {tile.value}

@@ -12,17 +12,19 @@ export default function Home() {
       <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-6">
 
         {/* Header */}
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between pt-2">
           <div>
-            <h1 className="text-lg font-bold text-text-primary tracking-tight">GridMind</h1>
-            <p className="text-xs text-text-muted">conquer the board</p>
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">
+              GridMind
+            </h1>
+            <p className="text-xs text-text-muted mt-0.5">conquer the board</p>
           </div>
           <button
             onClick={openAddTrackModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-white/6 hover:bg-white/10 text-text-secondary hover:text-text-primary border border-border transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-500/25 hover:border-violet-500/40 transition-colors"
           >
             <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5">
-              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             Add track
           </button>

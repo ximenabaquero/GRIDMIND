@@ -60,6 +60,7 @@ export function WeekNav({ weekId, onPrev, onNext }: WeekNavProps) {
 
       {/* Day labels + dates */}
       <div className="flex items-center gap-2 sm:gap-3">
+        <div className="w-[10px] shrink-0" /> {/* spacer matching drag handle */}
         <div className="min-w-[90px] sm:min-w-[110px] shrink-0" /> {/* spacer matching track label */}
         <div className="flex-1 grid grid-cols-7 gap-1 sm:gap-1.5">
           {dates.map((date, i) => {
@@ -67,18 +68,18 @@ export function WeekNav({ weekId, onPrev, onNext }: WeekNavProps) {
               isCurrentWeek &&
               new Date().getUTCDay() === (i === 6 ? 0 : i + 1); // Mon=1..Sun=0
             return (
-              <div key={i} className="flex flex-col items-center gap-0.5">
+              <div key={i} className={`flex flex-col items-center gap-0.5 rounded-md py-1 ${isToday ? "bg-white/6" : ""}`}>
                 <span
-                  className={`text-[10px] font-medium uppercase tracking-wide leading-none ${
-                    isToday ? "text-text-primary" : "text-text-muted"
+                  className={`text-[10px] font-semibold uppercase tracking-wide leading-none ${
+                    isToday ? "text-violet-300" : "text-text-muted"
                   }`}
                 >
                   {DAY_LABELS[i]}
                 </span>
                 <span
-                  className={`text-[11px] leading-none ${
+                  className={`text-[12px] leading-none ${
                     isToday
-                      ? "text-text-primary font-semibold"
+                      ? "text-violet-200 font-bold"
                       : "text-text-muted"
                   }`}
                 >
