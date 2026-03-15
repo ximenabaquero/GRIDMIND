@@ -36,6 +36,11 @@ html, body {
   height: 100%;
 }
 
+/* Prevent iOS auto-zoom on input focus */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
 /* Scrollbar minimalista */
 ::-webkit-scrollbar {
   width: 4px;
