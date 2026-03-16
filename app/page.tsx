@@ -1,12 +1,16 @@
 "use client";
+import { useState } from "react";
 import { useUIStore } from "@/app/store/uiStore";
 import { WeeklyGrid } from "@/app/features/grid/WeeklyGrid";
 import { Dashboard } from "@/app/features/dashboard/Dashboard";
 import { CalendarMonth } from "@/app/features/calendar/CalendarMonth";
 import { ModalController } from "@/app/components/ModalController";
 
+type View = "grid" | "calendar";
+
 export default function Home() {
   const { openAddTrackModal } = useUIStore();
+  const [view, setView] = useState<View>("grid");
 
   return (
     <div className="min-h-screen bg-bg-base">
@@ -34,14 +38,33 @@ export default function Home() {
         {/* Dashboard stats */}
         <Dashboard />
 
-        {/* THE GRID */}
-        <section>
-          <WeeklyGrid />
-        </section>
+        {/* View toggle */}
+        <div className="flex items-center bg-bg-surface border border-border rounded-lg p-0.5 self-start">
+          <button
+            onClick={() => setView("grid")}
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+              view === "grid"
+                ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                : "text-text-muted hover:text-text-base"
+            }`}
+          >
+            Grid
+          </button>
+          <button
+            onClick={() => setView("calendar")}
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+              view === "calendar"
+                ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                : "text-text-muted hover:text-text-base"
+            }`}
+          >
+            Calendar
+          </button>
+        </div>
 
-        {/* CALENDAR */}
-        <section>
-          <CalendarMonth />
+        {/* Active view */}
+        <section aria-label={view === "grid" ? "Weekly grid" : "Monthly calendar"}>
+          {view === "grid" ? <WeeklyGrid /> : <CalendarMonth />}
         </section>
 
       </div>
