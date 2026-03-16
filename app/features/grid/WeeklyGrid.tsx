@@ -45,9 +45,9 @@ function SortableRow({ track, cells, todayIndex, streak, onCellClick, onTrackCli
 
 export function WeeklyGrid() {
   const { tracks, loaded, load, reorder } = useTrackStore();
-  const { weekId, cells, loading, loadWeek, nextWeek, prevWeek, toggleCell, ensureCell } =
+  const { weekId, cells, loading, loadWeek, nextWeek, prevWeek, goToWeek, toggleCell, ensureCell } =
     useGridStore();
-  const { openPracticeModal, openTasksModal } = useUIStore();
+  const { openPracticeModal, openTasksModal, openTrackTasksModal } = useUIStore();
 
   const [orderedTracks, setOrderedTracks] = useState<Track[]>(tracks);
 
@@ -99,7 +99,7 @@ export function WeeklyGrid() {
 
   return (
     <div className="flex flex-col gap-4">
-      <WeekNav weekId={weekId} onPrev={prevWeek} onNext={nextWeek} />
+      <WeekNav weekId={weekId} onPrev={prevWeek} onNext={nextWeek} onToday={() => goToWeek(getWeekId(new Date()))} />
 
       {overplanning && (
         <div className="text-[11px] text-amber-400/70 bg-amber-400/5 border border-amber-400/15 rounded-md px-3 py-1.5">
@@ -134,7 +134,7 @@ export function WeeklyGrid() {
                 todayIndex={todayIdx}
                 streak={streaks[track.id] ?? 0}
                 onCellClick={(dayIndex, cell) => handleCellClick(track, dayIndex, cell)}
-                onTrackClick={() => useUIStore.getState().openEditTrackModal(track)}
+                onTrackClick={() => openTrackTasksModal(track, weekId)}
                 onDragEnd={handleDragEnd}
               />
             );

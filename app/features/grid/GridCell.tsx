@@ -83,13 +83,14 @@ export function GridCell({ track, cell, isToday, isBonus, onClick }: GridCellPro
 
       {/* Task progress dots */}
       {!isDone && !isGhost && cell.tasks && cell.tasks.length > 0 && (
-        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
+        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
           {cell.tasks.slice(0, 5).map((task) => (
             <div
               key={task.id}
-              className="w-1 h-1 rounded-full"
+              className="w-1.5 h-1.5 rounded-full transition-all"
               style={{
                 backgroundColor: task.done ? track.color : `${track.color}44`,
+                boxShadow: task.done ? `0 0 4px ${track.color}88` : "none",
               }}
             />
           ))}

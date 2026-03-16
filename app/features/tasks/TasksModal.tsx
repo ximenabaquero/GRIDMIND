@@ -18,7 +18,10 @@ export function TasksModal({ track, cell }: TasksModalProps) {
   const liveCell = cells[cell.id] ?? cell;
   const [tasks, setTasks] = useState<Task[]>(liveCell.tasks ?? []);
   const [input, setInput] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const editRef = useRef<HTMLInputElement>(null);
 
   const isDone = liveCell.status === "done";
 
@@ -46,8 +49,33 @@ export function TasksModal({ track, cell }: TasksModalProps) {
     await persistTasks(updated);
   };
 
+  const startEdit = (task: Task) => {
+    setEditingId(task.id);
+    setEditText(task.text);
+    setTimeout(() => editRef.current?.focus(), 0);
+  };
+
+  const saveEdit = async () => {
+    const text = editText.trim();
+    if (!text) return;
+    const updated = tasks.map((t) => (t.id === editingId ? { ...t, text } : t));
+    await persistTasks(updated);
+    setEditingId(null);
+    setEditText("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditText("");
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") addTask();
+  };
+
+  const handleEditKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") saveEdit();
+    if (e.key === "Escape") cancelEdit();
   };
 
   const handleToggleDone = async () => {
@@ -62,66 +90,85 @@ export function TasksModal({ track, cell }: TasksModalProps) {
       {/* Track header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{track.icon}</span>
-          <div>
-            <p className="font-semibold text-text-primary">{track.name}</p>
-            {tasks.length > 0 && (
-              <p className="text-xs text-text-muted">
-                {doneTasks}/{tasks.length} tasks
-              </p>
-            )}
-          </div>
+          <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: track.color }} />
+          <span className="text-sm font-semibold text-text-primary">{track.name}</span>
         </div>
-        {isDone && (
-          <span
-            className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: `${track.color}22`, color: track.color }}
-          >
-            Done
-          </span>
-        )}
+        <span className="text-xs text-text-muted">
+          {doneTasks}/{tasks.length}
+        </span>
       </div>
 
       {/* Task list */}
       {tasks.length > 0 && (
-        <ul className="flex flex-col gap-1.5">
+        <ul className="flex flex-col gap-1">
           {tasks.map((task) => (
-            <li key={task.id} className="flex items-center gap-2 group">
-              <button
-                onClick={() => toggleTask(task.id)}
-                className="shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors"
-                style={{
-                  backgroundColor: task.done ? track.color : "transparent",
-                  borderColor: task.done ? track.color : "rgba(255,255,255,0.2)",
-                }}
-              >
-                {task.done && (
-                  <svg viewBox="0 0 10 10" fill="none" className="w-2.5 h-2.5">
-                    <path
-                      d="M2 5.5L4 7.5L8 3"
-                      stroke="white"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </button>
-              <span
-                className="flex-1 text-sm"
-                style={{
-                  color: task.done ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.85)",
-                  textDecoration: task.done ? "line-through" : "none",
-                }}
-              >
-                {task.text}
-              </span>
-              <button
-                onClick={() => removeTask(task.id)}
-                className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-text-secondary transition-opacity text-xs px-1"
-              >
-                ✕
-              </button>
+            <li key={task.id} className="flex items-center gap-2">
+              {editingId === task.id ? (
+                <>
+                  <div className="shrink-0 w-4" />
+                  <input
+                    ref={editRef}
+                    type="text"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={handleEditKeyDown}
+                    className="flex-1 bg-bg-elevated border border-border rounded-md px-2 py-1 text-sm text-text-primary outline-none focus:border-white/20 transition-colors"
+                  />
+                  <button
+                    onClick={saveEdit}
+                    className="text-xs px-2 py-1 rounded transition-colors"
+                    style={{ backgroundColor: `${track.color}22`, color: track.color }}
+                  >
+                    ✓
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="text-text-muted hover:text-text-secondary transition-colors text-xs px-2 py-1 rounded hover:bg-white/5"
+                  >
+                    ✕
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => toggleTask(task.id)}
+                    className="shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors"
+                    style={{
+                      backgroundColor: task.done ? track.color : "transparent",
+                      borderColor: task.done ? track.color : "rgba(255,255,255,0.2)",
+                    }}
+                  >
+                    {task.done && (
+                      <svg viewBox="0 0 10 10" fill="none" className="w-2.5 h-2.5">
+                        <path
+                          d="M2 5.5L4 7.5L8 3"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                  <span
+                    onClick={() => startEdit(task)}
+                    className="flex-1 text-sm cursor-text hover:text-text-primary transition-colors"
+                    style={{
+                      color: task.done ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.85)",
+                      textDecoration: task.done ? "line-through" : "none",
+                    }}
+                  >
+                    {task.text}
+                  </span>
+                  <button
+                    onClick={() => removeTask(task.id)}
+                    className="text-text-muted hover:text-text-secondary transition-colors text-xs px-2 py-1 rounded hover:bg-white/5"
+                    aria-label="Delete task"
+                  >
+                    ✕
+                  </button>
+                </>
+              )}
             </li>
           ))}
         </ul>

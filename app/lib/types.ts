@@ -119,5 +119,12 @@ export function isWeekBefore(a: string, b: string): boolean {
 export function offsetWeek(weekId: string, n: number): string {
   const monday = getMondayOfWeek(weekId);
   monday.setUTCDate(monday.getUTCDate() + n * 7);
-  return getWeekId(monday);
+  // getMondayOfWeek returns a UTC-midnight date, so read it with UTC methods
+  // (getDate() would give the wrong day in UTC-N timezones)
+  const d = new Date(Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
 }

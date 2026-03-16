@@ -24,18 +24,22 @@ async function getUserId(): Promise<string> {
 // ─── Queries ────────────────────────────────────────────────────────────────
 
 export async function getCellsForWeek(weekId: string): Promise<Cell[]> {
+  const userId = await getUserId();
   const { data, error } = await supabase
     .from("cells")
     .select("*")
+    .eq("user_id", userId)
     .eq("week_id", weekId);
   if (error) throw error;
   return (data ?? []).map(rowToCell);
 }
 
 export async function getCellsForTrack(trackId: string): Promise<Cell[]> {
+  const userId = await getUserId();
   const { data, error } = await supabase
     .from("cells")
     .select("*")
+    .eq("user_id", userId)
     .eq("track_id", trackId);
   if (error) throw error;
   return (data ?? []).map(rowToCell);

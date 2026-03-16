@@ -5,6 +5,7 @@ interface WeekNavProps {
   weekId: string;
   onPrev: () => void;
   onNext: () => void;
+  onToday: () => void;
 }
 
 const MONTH_NAMES = [
@@ -12,17 +13,19 @@ const MONTH_NAMES = [
   "Jul","Aug","Sep","Oct","Nov","Dec",
 ];
 
-export function WeekNav({ weekId, onPrev, onNext }: WeekNavProps) {
+export function WeekNav({ weekId, onPrev, onNext, onToday }: WeekNavProps) {
   const dates = getWeekDates(weekId);
   const currentWeekId = getWeekId(new Date());
   const isCurrentWeek = weekId === currentWeekId;
 
   const start = dates[0];
   const end = dates[6];
+  const startDay = start.getUTCDate();
+  const endDay = end.getUTCDate();
   const label =
     start.getUTCMonth() === end.getUTCMonth()
-      ? `${MONTH_NAMES[start.getUTCMonth()]} ${start.getUTCFullYear()}`
-      : `${MONTH_NAMES[start.getUTCMonth()]} – ${MONTH_NAMES[end.getUTCMonth()]} ${end.getUTCFullYear()}`;
+      ? `${MONTH_NAMES[start.getUTCMonth()]} ${startDay} – ${endDay}, ${start.getUTCFullYear()}`
+      : `${MONTH_NAMES[start.getUTCMonth()]} ${startDay} – ${MONTH_NAMES[end.getUTCMonth()]} ${endDay}, ${end.getUTCFullYear()}`;
 
   return (
     <div className="flex flex-col gap-2">
@@ -37,6 +40,20 @@ export function WeekNav({ weekId, onPrev, onNext }: WeekNavProps) {
           )}
         </div>
         <div className="flex items-center gap-1">
+          {!isCurrentWeek && (
+            <button
+              onClick={onToday}
+              className="text-[10px] font-medium px-2 py-1 rounded-full bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-500/25 hover:border-violet-500/40 transition-colors"
+            >
+              Today
+            </button>
+          )}
+          <button
+            onClick={onNext}
+            className="text-[10px] font-medium px-2 py-1 rounded-full bg-white/8 hover:bg-white/12 text-text-secondary hover:text-text-primary border border-white/10 hover:border-white/20 transition-colors"
+          >
+            Next week →
+          </button>
           <button
             onClick={onPrev}
             className="p-1.5 rounded-md hover:bg-white/8 text-text-secondary hover:text-text-primary transition-colors"
@@ -44,15 +61,6 @@ export function WeekNav({ weekId, onPrev, onNext }: WeekNavProps) {
           >
             <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
               <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-          <button
-            onClick={onNext}
-            className="p-1.5 rounded-md hover:bg-white/8 text-text-secondary hover:text-text-primary transition-colors"
-            aria-label="Next week"
-          >
-            <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
-              <path d="M6 12l4-4-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>

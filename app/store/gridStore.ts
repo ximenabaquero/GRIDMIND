@@ -1,9 +1,8 @@
 "use client";
 import { create } from "zustand";
 import type { Cell, PracticeSession, Task } from "@/app/lib/types";
-import { getWeekId, offsetWeek, isWeekBefore } from "@/app/lib/types";
+import { getWeekId, offsetWeek } from "@/app/lib/types";
 import { getCellsForWeek, markCellDone, markCellEmpty, upsertCell, updateCellTasks, ghostifyWeek } from "@/app/db/queries/cells";
-import { nanoid } from "@/app/lib/nanoid";
 
 interface GridState {
   weekId: string;
@@ -13,9 +12,9 @@ interface GridState {
   _startupGhostDone: boolean;
 
   // Navigation
-  goToWeek: (weekId: string) => Promise<void>;
-  nextWeek: () => Promise<void>;
-  prevWeek: () => Promise<void>;
+  goToWeek: (weekId: string) => void;
+  nextWeek: () => void;
+  prevWeek: () => void;
 
   // Cell actions
   loadWeek: (weekId: string) => Promise<void>;
@@ -34,16 +33,8 @@ export const useGridStore = create<GridState>((set, get) => ({
 
   ghostifyPast: async (weekId) => {
     await ghostifyWeek(weekId);
-    const freshCells = await getCellsForWeek(weekId);
-    const freshMap: Record<string, Cell> = {};
-    for (const c of freshCells) freshMap[c.id] = c;
-    set((s) => {
-      const merged = { ...s.cells };
-      for (const key of Object.keys(merged)) {
-        if (merged[key].weekId === weekId) delete merged[key];
-      }
-      return { cells: { ...merged, ...freshMap } };
-    });
+    // No store update needed: the user has already navigated away.
+    // Cells reload fresh from DB the next time this week is visited.
   },
 
   loadWeek: async (weekId) => {
@@ -51,32 +42,33 @@ export const useGridStore = create<GridState>((set, get) => ({
     if (!get()._startupGhostDone) {
       set({ _startupGhostDone: true });
       const prevWeekId = offsetWeek(currentRealWeekId, -1);
-      await get().ghostifyPast(prevWeekId);
+      get().ghostifyPast(prevWeekId).catch(() => {});
     }
-    set({ loading: true });
-    const rows = await getCellsForWeek(weekId);
-    const map: Record<string, Cell> = {};
-    for (const c of rows) map[c.id] = c;
-    set({ cells: map, weekId, loading: false });
-  },
-
-  goToWeek: async (weekId) => {
-    await get().loadWeek(weekId);
-  },
-
-  nextWeek: async () => {
-    const leavingWeekId = get().weekId;
-    const currentRealWeekId = getWeekId(new Date());
-    if (isWeekBefore(leavingWeekId, currentRealWeekId)) {
-      await get().ghostifyPast(leavingWeekId);
+    // Update weekId and clear cells immediately — UI responds at once
+    set({ loading: true, weekId, cells: {} });
+    try {
+      const rows = await getCellsForWeek(weekId);
+      // Guard against a newer navigation having taken over
+      if (get().weekId !== weekId) return;
+      const map: Record<string, Cell> = {};
+      for (const c of rows) map[c.id] = c;
+      set({ cells: map, loading: false });
+    } catch {
+      if (get().weekId === weekId) set({ loading: false });
     }
-    const next = offsetWeek(leavingWeekId, 1);
-    await get().loadWeek(next);
   },
 
-  prevWeek: async () => {
-    const prev = offsetWeek(get().weekId, -1);
-    await get().loadWeek(prev);
+  // Navigation is synchronous: weekId updates instantly, cells load in background
+  goToWeek: (weekId) => {
+    get().loadWeek(weekId).catch(() => {});
+  },
+
+  nextWeek: () => {
+    get().goToWeek(offsetWeek(get().weekId, 1));
+  },
+
+  prevWeek: () => {
+    get().goToWeek(offsetWeek(get().weekId, -1));
   },
 
   ensureCell: (trackId, dayIndex) => {
@@ -109,7 +101,6 @@ export const useGridStore = create<GridState>((set, get) => ({
     if (cell.status === "done") {
       updated = await markCellEmpty(cell);
     } else {
-      // If cell doesn't exist in DB yet, persist it first
       if (!get().cells[cell.id]) {
         await upsertCell(cell);
       }
