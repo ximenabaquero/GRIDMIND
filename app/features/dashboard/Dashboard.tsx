@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { useTrackStore } from "@/app/store/trackStore";
 import { useGridStore } from "@/app/store/gridStore";
+import { BossCard } from "@/app/features/boss/BossCard";
 
 const TILE_COLORS = ["#8B5CF6", "#F59E0B", "#3B82F6"];
 
@@ -92,6 +93,7 @@ export function Dashboard() {
           <p className="text-[10px] text-text-muted leading-tight">{tile.sub}</p>
         </div>
       ))}
+      <BossCard />
     </div>
   );
 }

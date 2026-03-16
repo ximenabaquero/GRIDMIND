@@ -3,6 +3,9 @@ import { create } from "zustand";
 import type { Cell, PracticeSession, Task } from "@/app/lib/types";
 import { getWeekId, offsetWeek } from "@/app/lib/types";
 import { getCellsForWeek, markCellDone, markCellEmpty, upsertCell, updateCellTasks, ghostifyWeek } from "@/app/db/queries/cells";
+import { useTrackStore } from "@/app/store/trackStore";
+import { useUIStore } from "@/app/store/uiStore";
+import { getBossForWeek } from "@/app/features/boss/bosses";
 
 interface GridState {
   weekId: string;
@@ -61,6 +64,40 @@ export const useGridStore = create<GridState>((set, get) => ({
 
   // Navigation is synchronous: weekId updates instantly, cells load in background
   goToWeek: (weekId) => {
+    const currentWeekId = get().weekId;
+    const todayWeekId = getWeekId(new Date());
+
+    // Show boss result when navigating away from the current real week
+    if (
+      typeof window !== "undefined" &&
+      currentWeekId === todayWeekId &&
+      weekId !== currentWeekId
+    ) {
+      const storageKey = `boss_result_${currentWeekId}`;
+      if (!localStorage.getItem(storageKey)) {
+        const cells = get().cells;
+        const tracks = useTrackStore.getState().tracks;
+        const doneCells = Object.values(cells).filter(
+          (c) => c.weekId === currentWeekId && c.status === "done"
+        ).length;
+        const totalTarget = tracks.filter((t) => !t.archivedAt).reduce((s, t) => s + t.weeklyTarget, 0);
+        if (totalTarget > 0) {
+          const boss = getBossForWeek(currentWeekId);
+          const pct = Math.round((doneCells / totalTarget) * 100);
+          const resultData: import("@/app/lib/types").BossResultData = {
+            won: pct >= 100,
+            pct,
+            doneCells,
+            totalTarget,
+            weekId: currentWeekId,
+            boss,
+          };
+          localStorage.setItem(storageKey, JSON.stringify(resultData));
+          useUIStore.getState().openBossResultModal(resultData);
+        }
+      }
+    }
+
     get().loadWeek(weekId).catch(() => {});
   },
 

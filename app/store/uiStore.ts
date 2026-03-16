@@ -1,6 +1,6 @@
 "use client";
 import { create } from "zustand";
-import type { Track, Cell } from "@/app/lib/types";
+import type { Track, Cell, BossResultData } from "@/app/lib/types";
 
 type ActiveModal =
   | { kind: "practice"; track: Track; cell: Cell }
@@ -8,6 +8,7 @@ type ActiveModal =
   | { kind: "trackTasks"; track: Track; weekId: string }
   | { kind: "addTrack" }
   | { kind: "editTrack"; track: Track }
+  | { kind: "bossResult"; data: BossResultData }
   | null;
 
 interface UIState {
@@ -17,6 +18,7 @@ interface UIState {
   openTrackTasksModal: (track: Track, weekId: string) => void;
   openAddTrackModal: () => void;
   openEditTrackModal: (track: Track) => void;
+  openBossResultModal: (data: BossResultData) => void;
   closeModal: () => void;
 }
 
@@ -30,5 +32,6 @@ export const useUIStore = create<UIState>((set) => ({
     set({ modal: { kind: "trackTasks", track, weekId } }),
   openAddTrackModal: () => set({ modal: { kind: "addTrack" } }),
   openEditTrackModal: (track) => set({ modal: { kind: "editTrack", track } }),
+  openBossResultModal: (data) => set({ modal: { kind: "bossResult", data } }),
   closeModal: () => set({ modal: null }),
 }));

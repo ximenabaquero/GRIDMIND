@@ -5,6 +5,7 @@ import { PracticeModal } from "@/app/features/practice/PracticeModal";
 import { TasksModal } from "@/app/features/tasks/TasksModal";
 import { TrackTasksModal } from "@/app/features/tasks/TrackTasksModal";
 import { TrackForm } from "@/app/features/tracks/TrackForm";
+import { BossResultModal } from "@/app/features/boss/BossResultModal";
 
 export function ModalController() {
   const { modal, closeModal } = useUIStore();
@@ -56,6 +57,21 @@ export function ModalController() {
         title="Edit track"
       >
         {modal?.kind === "editTrack" && <TrackForm existing={modal.track} />}
+      </Modal>
+
+      {/* Boss result modal */}
+      <Modal
+        open={modal?.kind === "bossResult"}
+        onClose={closeModal}
+        title={
+          modal?.kind === "bossResult"
+            ? modal.data.won
+              ? "Batalla semanal"
+              : "Batalla semanal"
+            : undefined
+        }
+      >
+        {modal?.kind === "bossResult" && <BossResultModal data={modal.data} />}
       </Modal>
     </>
   );

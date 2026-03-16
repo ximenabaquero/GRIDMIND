@@ -74,6 +74,23 @@ export interface DayMood {
   mood: MoodEmoji;
 }
 
+// ─── Boss Fight ───────────────────────────────────────────────────────────────
+
+export interface Boss {
+  name: string;
+  emoji: string;
+  flavor: string;
+}
+
+export interface BossResultData {
+  won: boolean;
+  pct: number;      // 0-100, used for tier (≥100 victory, ≥70 wounded, <70 defeat)
+  doneCells: number;
+  totalTarget: number;
+  weekId: string;
+  boss: Boss;
+}
+
 // ─── Week helpers ─────────────────────────────────────────────────────────────
 
 /** Returns "YYYY-Www" for a given Date */
