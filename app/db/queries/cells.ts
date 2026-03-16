@@ -34,6 +34,18 @@ export async function getCellsForWeek(weekId: string): Promise<Cell[]> {
   return (data ?? []).map(rowToCell);
 }
 
+export async function getCellsForWeeks(weekIds: string[]): Promise<Cell[]> {
+  if (weekIds.length === 0) return [];
+  const userId = await getUserId();
+  const { data, error } = await supabase
+    .from("cells")
+    .select("*")
+    .eq("user_id", userId)
+    .in("week_id", weekIds);
+  if (error) throw error;
+  return (data ?? []).map(rowToCell);
+}
+
 export async function getCellsForTrack(trackId: string): Promise<Cell[]> {
   const userId = await getUserId();
   const { data, error } = await supabase

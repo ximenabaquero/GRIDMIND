@@ -22,6 +22,7 @@ interface GridState {
   toggleCell: (trackId: string, dayIndex: number, session?: PracticeSession) => Promise<void>;
   ensureCell: (trackId: string, dayIndex: number) => Cell;
   saveTasks: (trackId: string, dayIndex: number, tasks: Task[]) => Promise<Cell>;
+  saveTasksForWeek: (trackId: string, weekId: string, dayIndex: number, tasks: Task[]) => Promise<Cell>;
 }
 
 export const useGridStore = create<GridState>((set, get) => ({
@@ -91,6 +92,20 @@ export const useGridStore = create<GridState>((set, get) => ({
     }
     const updated = await updateCellTasks(cell, tasks);
     set((s) => ({ cells: { ...s.cells, [updated.id]: updated } }));
+    return updated;
+  },
+
+  saveTasksForWeek: async (trackId, weekId, dayIndex, tasks) => {
+    const cellId = `${trackId}_${weekId}_${dayIndex}`;
+    const cell: Cell = get().cells[cellId] ?? { id: cellId, trackId, weekId, dayIndex, status: "empty" };
+    if (!get().cells[cellId]) {
+      await upsertCell(cell);
+    }
+    const updated = await updateCellTasks(cell, tasks);
+    set((s) => ({
+      cells: { ...s.cells, [updated.id]: updated },
+      cellVersion: s.cellVersion + 1,
+    }));
     return updated;
   },
 

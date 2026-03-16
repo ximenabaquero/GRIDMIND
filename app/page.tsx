@@ -2,6 +2,7 @@
 import { useUIStore } from "@/app/store/uiStore";
 import { WeeklyGrid } from "@/app/features/grid/WeeklyGrid";
 import { Dashboard } from "@/app/features/dashboard/Dashboard";
+import { CalendarMonth } from "@/app/features/calendar/CalendarMonth";
 import { ModalController } from "@/app/components/ModalController";
 
 export default function Home() {
@@ -36,6 +37,11 @@ export default function Home() {
         {/* THE GRID */}
         <section>
           <WeeklyGrid />
+        </section>
+
+        {/* CALENDAR */}
+        <section>
+          <CalendarMonth />
         </section>
 
       </div>
