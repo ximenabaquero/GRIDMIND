@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useCalendarCells } from "./useCalendarCells";
 import { DayModal } from "./DayModal";
-import type { DayTask } from "./useCalendarCells";
+import type { DayTask, DayStatusMap } from "./useCalendarCells";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -32,9 +32,9 @@ function buildCalendarGrid(year: number, month: number): CalendarDay[] {
   const gridEnd = new Date(lastOfMonth);
   gridEnd.setUTCDate(lastOfMonth.getUTCDate() + endOffset);
 
-  // "Today" using local date components (consistent with getWeekId behavior)
+  // "Today" using UTC components — consistent with how all dateKeys are built
   const now = new Date();
-  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const todayKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
 
   const days: CalendarDay[] = [];
   const cur = new Date(gridStart);
@@ -58,7 +58,7 @@ export function CalendarMonth() {
   const [month, setMonth] = useState(now.getMonth()); // 0-indexed
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
-  const { dayTaskMap, loading } = useCalendarCells(year, month);
+  const { dayTaskMap, dayStatusMap, loading } = useCalendarCells(year, month);
   const days = buildCalendarGrid(year, month);
 
   const prevMonth = () => {
@@ -121,6 +121,7 @@ export function CalendarMonth() {
           const tasks: DayTask[] = dayTaskMap[day.dateKey] ?? [];
           const visibleTasks = tasks.slice(0, 3);
           const overflow = tasks.length - visibleTasks.length;
+          const doneStatuses = (dayStatusMap[day.dateKey] ?? []).slice(0, 7);
 
           return (
             <button
@@ -175,6 +176,20 @@ export function CalendarMonth() {
                   </span>
                 )}
               </div>
+
+              {/* Done-habit dots */}
+              {doneStatuses.length > 0 && (
+                <div className="flex flex-wrap gap-px mt-auto pt-0.5">
+                  {doneStatuses.map((s) => (
+                    <div
+                      key={s.track.id}
+                      className="w-1.5 h-1.5 rounded-sm"
+                      style={{ backgroundColor: s.track.color }}
+                      title={s.track.name}
+                    />
+                  ))}
+                </div>
+              )}
             </button>
           );
         })}
@@ -186,6 +201,7 @@ export function CalendarMonth() {
           key={selectedDateKey}
           dateKey={selectedDateKey}
           dayTasks={dayTaskMap[selectedDateKey] ?? []}
+          dayStatuses={dayStatusMap[selectedDateKey] ?? []}
           onClose={() => setSelectedDateKey(null)}
         />
       )}

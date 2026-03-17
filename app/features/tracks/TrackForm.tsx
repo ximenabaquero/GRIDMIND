@@ -30,6 +30,7 @@ export function TrackForm({ existing }: TrackFormProps) {
   const [color, setColor] = useState(existing?.color ?? PRESET_COLORS[0]);
   const [icon, setIcon] = useState(existing?.icon ?? "🎯");
   const [weeklyTarget, setWeeklyTarget] = useState(existing?.weeklyTarget ?? 5);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Effort-specific
   const [totalSquares, setTotalSquares] = useState(
@@ -239,12 +240,30 @@ export function TrackForm({ existing }: TrackFormProps) {
           {existing ? "Save changes" : "Add track"}
         </button>
         {existing && (
-          <button
-            onClick={handleDelete}
-            className="px-4 py-2.5 rounded-md text-sm font-medium bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
-          >
-            Archive
-          </button>
+          confirmDelete ? (
+            <div className="flex items-center gap-2 flex-1">
+              <span className="text-xs text-text-muted flex-1">Archive "{existing.name}"?</span>
+              <button
+                onClick={handleDelete}
+                className="px-3 py-2 rounded-md text-sm font-medium bg-red-500/15 hover:bg-red-500/25 text-red-400 transition-colors"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="px-3 py-2 rounded-md text-sm font-medium bg-white/5 hover:bg-white/10 text-text-muted transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="px-4 py-2.5 rounded-md text-sm font-medium bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+            >
+              Archive
+            </button>
+          )
         )}
       </div>
     </div>

@@ -19,6 +19,7 @@ export function TrackTasksModal({ track, weekId }: TrackTasksModalProps) {
   const [inputText, setInputText] = useState("");
   const [editingTask, setEditingTask] = useState<{ dayIndex: number; taskId: string } | null>(null);
   const [editText, setEditText] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const getTasksForDay = (dayIndex: number): Task[] => {
     const id = `${track.id}_${weekId}_${dayIndex}`;
@@ -26,15 +27,25 @@ export function TrackTasksModal({ track, weekId }: TrackTasksModalProps) {
   };
 
   const toggleTask = async (dayIndex: number, taskId: string) => {
-    const tasks = getTasksForDay(dayIndex);
-    const updated = tasks.map((t) => (t.id === taskId ? { ...t, done: !t.done } : t));
-    await saveTasks(track.id, dayIndex, updated);
+    setError(null);
+    try {
+      const tasks = getTasksForDay(dayIndex);
+      const updated = tasks.map((t) => (t.id === taskId ? { ...t, done: !t.done } : t));
+      await saveTasks(track.id, dayIndex, updated);
+    } catch {
+      setError("Failed to save — check your connection and try again.");
+    }
   };
 
   const removeTask = async (dayIndex: number, taskId: string) => {
-    const tasks = getTasksForDay(dayIndex);
-    const updated = tasks.filter((t) => t.id !== taskId);
-    await saveTasks(track.id, dayIndex, updated);
+    setError(null);
+    try {
+      const tasks = getTasksForDay(dayIndex);
+      const updated = tasks.filter((t) => t.id !== taskId);
+      await saveTasks(track.id, dayIndex, updated);
+    } catch {
+      setError("Failed to save — check your connection and try again.");
+    }
   };
 
   const startEdit = (dayIndex: number, task: Task) => {
@@ -46,11 +57,16 @@ export function TrackTasksModal({ track, weekId }: TrackTasksModalProps) {
     if (!editingTask) return;
     const text = editText.trim();
     if (!text) return;
-    const tasks = getTasksForDay(editingTask.dayIndex);
-    const updated = tasks.map((t) => (t.id === editingTask.taskId ? { ...t, text } : t));
-    await saveTasks(track.id, editingTask.dayIndex, updated);
-    setEditingTask(null);
-    setEditText("");
+    setError(null);
+    try {
+      const tasks = getTasksForDay(editingTask.dayIndex);
+      const updated = tasks.map((t) => (t.id === editingTask.taskId ? { ...t, text } : t));
+      await saveTasks(track.id, editingTask.dayIndex, updated);
+      setEditingTask(null);
+      setEditText("");
+    } catch {
+      setError("Failed to save — check your connection and try again.");
+    }
   };
 
   const cancelEdit = () => {
@@ -61,11 +77,17 @@ export function TrackTasksModal({ track, weekId }: TrackTasksModalProps) {
   const addTask = async (dayIndex: number) => {
     const text = inputText.trim();
     if (!text) return;
-    const tasks = getTasksForDay(dayIndex);
-    const updated = [...tasks, { id: nanoid(), text, done: false }];
-    setInputText("");
-    setAddingDay(null);
-    await saveTasks(track.id, dayIndex, updated);
+    setError(null);
+    try {
+      const tasks = getTasksForDay(dayIndex);
+      const updated = [...tasks, { id: nanoid(), text, done: false }];
+      setInputText("");
+      setAddingDay(null);
+      await saveTasks(track.id, dayIndex, updated);
+    } catch {
+      setInputText(text); // restore on failure
+      setError("Failed to save — check your connection and try again.");
+    }
   };
 
   const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>, dayIndex: number) => {
@@ -93,6 +115,11 @@ export function TrackTasksModal({ track, weekId }: TrackTasksModalProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      {error && (
+        <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+          {error}
+        </p>
+      )}
       {/* Summary */}
       {totalCount > 0 ? (
         <p className="text-xs text-text-muted">

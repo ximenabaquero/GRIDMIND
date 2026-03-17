@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import type { Cell, PracticeSession, Task } from "@/app/lib/types";
 import { getWeekId, offsetWeek } from "@/app/lib/types";
-import { getCellsForWeek, markCellDone, markCellEmpty, upsertCell, updateCellTasks, ghostifyWeek } from "@/app/db/queries/cells";
+import { getCellsForWeek, markCellDone, markCellEmpty, upsertCell, updateCellTasks, ghostifyWeek, ghostifyAllPastWeeks } from "@/app/db/queries/cells";
 import { useTrackStore } from "@/app/store/trackStore";
 import { useUIStore } from "@/app/store/uiStore";
 import { getBossForWeek } from "@/app/features/boss/bosses";
@@ -11,7 +11,7 @@ interface GridState {
   weekId: string;
   cells: Record<string, Cell>; // keyed by cell.id
   loading: boolean;
-  cellVersion: number;
+  changedWeekId: string | null; // weekId of the most recently mutated cell
   _startupGhostDone: boolean;
 
   // Navigation
@@ -32,7 +32,7 @@ export const useGridStore = create<GridState>((set, get) => ({
   weekId: getWeekId(new Date()),
   cells: {},
   loading: false,
-  cellVersion: 0,
+  changedWeekId: null,
   _startupGhostDone: false,
 
   ghostifyPast: async (weekId) => {
@@ -45,8 +45,7 @@ export const useGridStore = create<GridState>((set, get) => ({
     const currentRealWeekId = getWeekId(new Date());
     if (!get()._startupGhostDone) {
       set({ _startupGhostDone: true });
-      const prevWeekId = offsetWeek(currentRealWeekId, -1);
-      get().ghostifyPast(prevWeekId).catch(() => {});
+      ghostifyAllPastWeeks(currentRealWeekId).catch(() => {});
     }
     // Update weekId and clear cells immediately — UI responds at once
     set({ loading: true, weekId, cells: {} });
@@ -141,7 +140,7 @@ export const useGridStore = create<GridState>((set, get) => ({
     const updated = await updateCellTasks(cell, tasks);
     set((s) => ({
       cells: { ...s.cells, [updated.id]: updated },
-      cellVersion: s.cellVersion + 1,
+      changedWeekId: weekId,
     }));
     return updated;
   },
@@ -161,7 +160,7 @@ export const useGridStore = create<GridState>((set, get) => ({
 
     set((s) => ({
       cells: { ...s.cells, [updated.id]: updated },
-      cellVersion: s.cellVersion + 1,
+      changedWeekId: get().weekId,
     }));
   },
 }));

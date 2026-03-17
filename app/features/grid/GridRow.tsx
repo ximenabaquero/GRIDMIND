@@ -11,6 +11,9 @@ interface GridRowProps {
   onCellClick: (dayIndex: number, cell: Cell | null) => void;
   onTrackClick: () => void;
   onDragHandlePointerDown: (e: React.PointerEvent) => void;
+  isReordering?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 export function GridRow({
@@ -21,12 +24,41 @@ export function GridRow({
   onCellClick,
   onTrackClick,
   onDragHandlePointerDown,
+  isReordering,
+  onMoveUp,
+  onMoveDown,
 }: GridRowProps) {
   const doneCount = cells.filter((c) => c?.status === "done").length;
   const pct = Math.round((doneCount / track.weeklyTarget) * 100);
 
   return (
     <div className="flex items-center gap-2 sm:gap-3 group">
+      {/* Mobile ↑/↓ reorder buttons — only visible in reorder mode */}
+      {isReordering ? (
+        <div className="flex sm:hidden flex-col shrink-0">
+          <button
+            onClick={onMoveUp}
+            disabled={!onMoveUp}
+            className="w-6 h-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors disabled:opacity-20"
+            aria-label="Move up"
+          >
+            <svg viewBox="0 0 10 10" fill="none" className="w-3 h-3">
+              <path d="M2 7l3-4 3 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={!onMoveDown}
+            className="w-6 h-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors disabled:opacity-20"
+            aria-label="Move down"
+          >
+            <svg viewBox="0 0 10 10" fill="none" className="w-3 h-3">
+              <path d="M2 3l3 4 3-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+      ) : null}
+
       {/* Drag handle — hidden on mobile */}
       <div
         onPointerDown={onDragHandlePointerDown}
@@ -43,10 +75,13 @@ export function GridRow({
         </svg>
       </div>
 
-      {/* Track label — compact on mobile, full on desktop */}
+      {/* Track label — compact on mobile (invisible during reorder to keep layout), full on desktop */}
       <button
         onClick={onTrackClick}
-        className="flex flex-col items-center gap-0.5 min-w-[44px] sm:hidden shrink-0 rounded-md px-1 py-1 hover:bg-white/5 transition-colors"
+        className={[
+          "flex flex-col items-center gap-0.5 min-w-[44px] sm:hidden shrink-0 rounded-md px-1 py-1 hover:bg-white/5 transition-colors",
+          isReordering ? "invisible" : "",
+        ].filter(Boolean).join(" ")}
       >
         <span className="text-xl leading-none">{track.icon}</span>
         <p className="text-[9px] text-text-muted tabular-nums leading-tight">

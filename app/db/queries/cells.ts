@@ -131,6 +131,19 @@ export async function ghostifyWeek(weekId: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Ghostifies every empty cell from any week strictly before `currentWeekId`.
+ *  ISO week IDs ("YYYY-Www") sort correctly as strings, so lt() works cross-year. */
+export async function ghostifyAllPastWeeks(currentWeekId: string): Promise<void> {
+  const userId = await getUserId();
+  const { error } = await supabase
+    .from("cells")
+    .update({ status: "ghost" })
+    .eq("user_id", userId)
+    .lt("week_id", currentWeekId)
+    .eq("status", "empty");
+  if (error) throw error;
+}
+
 export async function updateCellTasks(cell: Cell, tasks: Task[]): Promise<Cell> {
   const userId = await getUserId();
   const updated: Cell = { ...cell, tasks };

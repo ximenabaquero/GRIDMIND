@@ -1,4 +1,5 @@
 "use client";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Track, Cell } from "@/app/lib/types";
 
@@ -15,9 +16,47 @@ export function GridCell({ track, cell, isToday, isBonus, onClick }: GridCellPro
   const isGhost = cell.status === "ghost";
   const dimmed = isBonus && !isDone && !isGhost;
 
+  const metricValue = isDone && cell.session?.metricEnd ? String(cell.session.metricEnd) : null;
+  const metricUnit: string = (track.config as any)?.metricUnit ?? "";
+
+  const [tipVisible, setTipVisible] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPress = useRef(false);
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleTouchStart = () => {
+    if (!metricValue) return;
+    didLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      didLongPress.current = true;
+      setTipVisible(true);
+      setTimeout(() => setTipVisible(false), 1800);
+    }, 450);
+  };
+
+  const handleTouchEnd = () => cancelLongPress();
+  const handleTouchMove = () => cancelLongPress();
+
+  const handleClick = () => {
+    if (didLongPress.current) {
+      didLongPress.current = false;
+      return;
+    }
+    onClick();
+  };
+
   return (
     <motion.button
-      onClick={onClick}
+      onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
       disabled={isGhost}
       whileTap={!isGhost ? { scale: 0.88 } : undefined}
       className={[
@@ -39,8 +78,28 @@ export function GridCell({ track, cell, isToday, isBonus, onClick }: GridCellPro
           : `1.5px ${dimmed ? "dashed" : "solid"} ${track.color}${isGhost ? "22" : "55"}`,
         boxShadow: isDone ? `0 0 12px ${track.color}55` : "none",
       }}
-      title={isDone && cell.session?.metricEnd ? `${cell.session.metricEnd} ${(track.config as any).metricUnit ?? ""}` : undefined}
+      title={metricValue ? `${metricValue}${metricUnit ? ` ${metricUnit}` : ""}` : undefined}
     >
+      {/* Long-press metric tooltip (mobile) */}
+      <AnimatePresence>
+        {tipVisible && metricValue && (
+          <motion.div
+            initial={{ opacity: 0, y: 4, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.9 }}
+            transition={{ duration: 0.12 }}
+            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap"
+          >
+            <div
+              className="text-[11px] font-semibold px-2 py-1 rounded-md shadow-xl border border-white/15"
+              style={{ backgroundColor: track.color, color: "rgba(0,0,0,0.85)" }}
+            >
+              {metricValue}{metricUnit ? ` ${metricUnit}` : ""}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {isDone && (
           <motion.div

@@ -49,19 +49,16 @@ export function WeekNav({ weekId, onPrev, onNext, onToday }: WeekNavProps) {
             </button>
           )}
           <button
+            onClick={onPrev}
+            className="text-[10px] font-medium px-2 py-1 rounded-full bg-white/8 hover:bg-white/12 text-text-secondary hover:text-text-primary border border-white/10 hover:border-white/20 transition-colors"
+          >
+            ← Prev week
+          </button>
+          <button
             onClick={onNext}
             className="text-[10px] font-medium px-2 py-1 rounded-full bg-white/8 hover:bg-white/12 text-text-secondary hover:text-text-primary border border-white/10 hover:border-white/20 transition-colors"
           >
             Next week →
-          </button>
-          <button
-            onClick={onPrev}
-            className="p-1.5 rounded-md hover:bg-white/8 text-text-secondary hover:text-text-primary transition-colors"
-            aria-label="Previous week"
-          >
-            <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
-              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
           </button>
         </div>
       </div>

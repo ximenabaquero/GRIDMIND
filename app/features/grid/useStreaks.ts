@@ -8,7 +8,7 @@ import { useGridStore } from "@/app/store/gridStore";
 
 export function useStreaks(tracks: Track[]): Record<string, number> {
   const [streaks, setStreaks] = useState<Record<string, number>>({});
-  const cellVersion = useGridStore((s) => s.cellVersion);
+  const changedWeekId = useGridStore((s) => s.changedWeekId);
   const trackKey = tracks.map((t) => t.id).join(",");
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export function useStreaks(tracks: Track[]): Record<string, number> {
       setStreaks(map);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackKey, cellVersion]);
+  }, [trackKey, changedWeekId]);
 
   return streaks;
 }
